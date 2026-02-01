@@ -1,5 +1,5 @@
 
-const { createUser, userExists } = require('../services/userService');
+const { createUser, userExists, getUserByEmail } = require('../services/userService');
 const bcrypt = require("bcrypt");
 
 const querystring = require("node:querystring");
@@ -39,7 +39,17 @@ async function handleApiCall(req, res) {
                 errors.push("Password must be confirmed ");
             }
 
-            if(await userExists(formData.email)) {
+            if(!formData.rules) {
+                errors.push("You must agree with site rules");
+            }
+
+            if(formData.password && formData.password_confirm) {
+                if(formData.password !== formData.password_confirm) {
+                    errors.push("Password must be same");
+                }
+            }
+
+            if(errors.length === 0 && await userExists(formData.email)) {
                 errors.push("This email is already taken");
             }
 
@@ -54,6 +64,54 @@ async function handleApiCall(req, res) {
 
             res.writeHead(200, { 'Content-Type': 'application/json'});
             return res.end(JSON.stringify({success: true, message: "Created new user"}));
+        });
+
+        return;
+
+    }
+    else if(urlMatch[1] === 'login' && req.method === "POST") {
+
+        let body = "";
+
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+
+        req.on('end', async () => {
+
+            const formData = querystring.parse(body);
+
+            const errors = [];
+
+            if(!formData.password || formData.password.length < 3) {
+                errors.push("Password must be set and at least be 3 characters");
+            }
+
+            if(!formData.email || !formData.email.includes('@')) {
+                errors.push("Email must be set and valid");
+            }
+
+            if(errors.length > 0) {
+                res.writeHead(400, { 'Content-Type': 'application/json'});
+                return res.end(JSON.stringify(errors));
+            }
+
+            const user = await getUserByEmail(formData.email);
+
+            if(!user) {
+                res.writeHead(400, { 'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({message: "This user doesn't exist"}));
+            }
+
+            const passwordMatch = await bcrypt.compare(formData.password, user.password);
+
+            if(!passwordMatch) {
+                res.writeHead(400, { 'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({message: "Wrong password"}));
+            }
+
+            res.writeHead(200, { 'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({success: true, message: "Logged in succesfully"}));
         });
 
         return;
