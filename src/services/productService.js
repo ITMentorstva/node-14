@@ -11,4 +11,12 @@ async function fetchSingleProduct(slug) {
     return rows[0] || null;
 }
 
-module.exports = { getAllProducts, fetchSingleProduct };
+async function getProductsById(productIds) {
+
+    const placeholders = productIds.map(() => '?').join(','); // [0,1,2] =>  "?, ?, ?"
+
+    const [ rows ] = await pool.query(`SELECT * FROM products WHERE id IN (${placeholders})`, productIds);
+    return rows;
+}
+
+module.exports = { getAllProducts, fetchSingleProduct, getProductsById };

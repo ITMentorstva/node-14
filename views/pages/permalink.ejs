@@ -2,3 +2,8 @@
 <h1><%- product.name %></h1>
 <p><%- product.price %></p>
 <p><%- product.amount %></p>
+
+<form method="POST" action="/api/add-to-cart">
+    <input name="productId" type="hidden" value="<%- product.id %>" />
+    <button>Add to cart</button>
+</form>

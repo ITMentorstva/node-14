@@ -32,4 +32,31 @@ function getSession(req) {
     return sessions[match[1]] || null;
 }
 
-module.exports = { sessions, createSession, getSession };
+function deleteSession(userId) {
+    for(const id in sessions) {
+        if(sessions[id].userId === userId) {
+            delete sessions[id];
+            saveSessions(sessions);
+            break;
+        }
+    }
+    return 'sid=; HttpOnly; Path=/; Max-Age=0';
+}
+
+function addToCart(userId, productId) {
+
+    const session = Object.values(sessions).find(s => s.userId === userId);
+
+    if(!session) return false;
+
+    if(!Array.isArray(session.shoppingCart)) {
+        session.shoppingCart = [];
+    }
+
+    session.shoppingCart.push(productId);
+    saveSessions(sessions);
+
+    return true;
+}
+
+module.exports = { sessions, createSession, getSession, deleteSession, addToCart };

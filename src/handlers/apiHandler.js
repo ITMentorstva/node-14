@@ -1,7 +1,7 @@
 
 const { createUser, userExists, getUserByEmail } = require('../services/userService');
 const bcrypt = require("bcrypt");
-const { createSession } = require('../services/sessionService');
+const { createSession, getSession, deleteSession, addToCart} = require('../services/sessionService');
 
 const querystring = require("node:querystring");
 
@@ -65,8 +65,8 @@ async function handleApiCall(req, res) {
             const sessionId = createSession(userId);
 
             res.setHeader('Set-Cookie', `sid=${sessionId}; HttpOnly; Path=/`);
-            res.writeHead(200, { 'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({success: true, message: "Created new user"}));
+            res.writeHead(303, { 'Location' : '/' });
+            return res.end();
         });
 
         return;
@@ -116,8 +116,44 @@ async function handleApiCall(req, res) {
             const sessionId = createSession(user.id); // sessions: {'qwdqwdqd': {userId: 1}} return qwdqwdqd;
 
             res.setHeader('Set-Cookie', `sid=${sessionId}; HttpOnly; Path=/`);
-            res.writeHead(200, { 'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({success: true, message: "Logged in succesfully"}));
+            res.writeHead(303, { 'Location' : '/' });
+            return res.end();
+        });
+
+        return;
+
+    }
+    else if(urlMatch[1] === 'logout' && req.method === 'GET') {
+        const user = getSession(req);
+        if(user) {
+            const cookie = deleteSession(user.userId);
+            res.setHeader('Set-Cookie', cookie);
+            res.writeHead(303, { 'Location' : '/' });
+            return res.end();
+        }
+    }
+    else if(urlMatch[1] === 'add-to-cart' && req.method === 'POST') {
+
+        let body = "";
+
+        req.on('data', chunk => {
+            body += chunk.toString();
+        });
+
+        req.on('end', async () => {
+
+            const formData = querystring.parse(body);
+
+            const user = getSession(req);
+
+            console.log(user);
+
+            addToCart(user.userId, formData.productId);
+
+            const backUrl = req.headers.referer || '/';
+
+            res.writeHead(303, {'Location': backUrl});
+            return res.end();
         });
 
         return;
