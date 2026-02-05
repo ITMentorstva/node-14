@@ -20,8 +20,7 @@ const server = http.createServer( async (req, res) => {
     }
 
     if(req.url === '/') {
-        const products = await getAllProducts();
-        handlePage("home", {products: products}, req, res);
+        handlePage("home", {}, req, res);
         return;
     } else if(req.url === '/about') {
         handlePage("about", {}, req, res);

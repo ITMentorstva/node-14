@@ -1,4 +1,4 @@
-<form action="/api/register" method="post">
+<form action="/api/register" id="registerForm" method="post">
 
     <div>
         <label for="name">Name:</label><br>
@@ -35,3 +35,48 @@
 
     <button type="submit">Submit</button>
 </form>
+
+<script>
+    const registerForm = document.getElementById("registerForm");
+
+    registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = registerForm.name.value;
+        const email = registerForm.email.value;
+        const password = registerForm.password.value;
+        const password_confirm = registerForm.password_confirm.value;
+        const rules = registerForm.rules.checked;
+
+        const res = await fetch("/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name,
+                email,
+                password,
+                password_confirm,
+                rules
+            }),
+            credentials: "include"
+        });
+
+        if (!res.ok) {
+            throw new Error("Registration failed");
+        }
+
+        const data = await res.json();
+
+        if (data.success) {
+            window.location.reload();
+        }
+    });
+</script>
+
+1. Dodajte dizajn (AI)
+2. /cart -> treba je popraviti tako da proizvode vadi pomocu Frontenda
+3. Finisiraj porudzbinu
+    -> orders (user_id)
+    -> order_items (order, product_id)

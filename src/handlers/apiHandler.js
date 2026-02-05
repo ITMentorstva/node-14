@@ -2,6 +2,8 @@
 const { createUser, userExists, getUserByEmail } = require('../services/userService');
 const bcrypt = require("bcrypt");
 const { createSession, getSession, deleteSession, addToCart} = require('../services/sessionService');
+const {getAllProducts} = require("../services/productService");
+const { successResponse } = require("../helpers/apiResponseHelper");
 
 const querystring = require("node:querystring");
 
@@ -20,7 +22,7 @@ async function handleApiCall(req, res) {
 
         req.on('end', async () => {
 
-            const formData = querystring.parse(body);
+            const formData = JSON.parse(body);
 
             const errors = [];
 
@@ -65,8 +67,7 @@ async function handleApiCall(req, res) {
             const sessionId = createSession(userId);
 
             res.setHeader('Set-Cookie', `sid=${sessionId}; HttpOnly; Path=/`);
-            res.writeHead(303, { 'Location' : '/' });
-            return res.end();
+            successResponse(res);
         });
 
         return;
@@ -82,7 +83,7 @@ async function handleApiCall(req, res) {
 
         req.on('end', async () => {
 
-            const formData = querystring.parse(body);
+            const formData = JSON.parse(body);
 
             const errors = [];
 
@@ -116,8 +117,7 @@ async function handleApiCall(req, res) {
             const sessionId = createSession(user.id); // sessions: {'qwdqwdqd': {userId: 1}} return qwdqwdqd;
 
             res.setHeader('Set-Cookie', `sid=${sessionId}; HttpOnly; Path=/`);
-            res.writeHead(303, { 'Location' : '/' });
-            return res.end();
+            successResponse(res);
         });
 
         return;
@@ -142,22 +142,24 @@ async function handleApiCall(req, res) {
 
         req.on('end', async () => {
 
-            const formData = querystring.parse(body);
+            const formData = JSON.parse(body);
 
             const user = getSession(req);
 
-            console.log(user);
-
             addToCart(user.userId, formData.productId);
 
-            const backUrl = req.headers.referer || '/';
-
-            res.writeHead(303, {'Location': backUrl});
-            return res.end();
+            successResponse(res);
         });
 
         return;
 
+    }
+    else if(urlMatch[1] === 'products' && req.method === 'GET') {
+
+        const products = await getAllProducts();
+
+        res.writeHead(200, { 'Content-Type' : 'application/json' });
+        return res.end(JSON.stringify({products: products}));
     }
 
     const response = {success: true};

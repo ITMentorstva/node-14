@@ -4,12 +4,35 @@
 <% } %>
 
 <div id="products-container">
-    <% products.forEach(product => { %>
-        <div class="product-card">
-            <p class="product-name"><%- product.name %></p>
-            <p class="product-price">$<%- product.price %></p>
-            <p class="product-amount">Available: <%- product.amount %></p>
-            <a href="/product/<%- product.slug %>">Visit product</a>
-        </div>
-    <% }) %>
+
 </div>
+
+<script>
+
+    const productsContainer = document.getElementById("products-container");
+
+    async function fetchProducts() {
+
+        const res = await fetch('/api/products');
+        if(!res.ok) throw new Error('Bad response');
+
+        const products = await res.json();
+
+        products.products.forEach(product => {
+            const productCard = `
+            <div class="product-card">
+                <p class="product-name">${product.name}</p>
+                <p class="product-price">$${product.price}</p>
+                <p class="product-amount">Available: ${product.amount}</p>
+                <a href="/product/${product.slug}">Visit product</a>
+            </div>
+        `;
+
+            productsContainer.insertAdjacentHTML('beforeend', productCard);
+        });
+
+    }
+
+    fetchProducts();
+
+</script>

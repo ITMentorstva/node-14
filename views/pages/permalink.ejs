@@ -3,7 +3,28 @@
 <p><%- product.price %></p>
 <p><%- product.amount %></p>
 
-<form method="POST" action="/api/add-to-cart">
-    <input name="productId" type="hidden" value="<%- product.id %>" />
-    <button>Add to cart</button>
-</form>
+<button id="addToCart" data-product-id="<%- product.id %>">Add to cart</button>
+
+<script>
+
+    const button = document.getElementById("addToCart");
+
+    button.addEventListener("click", async() => {
+
+        const productId = button.dataset.productId;
+
+        const res = await fetch('/api/add-to-cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({ productId }) // productId: 5
+        });
+
+        if(!res.ok) throw new Error("Failed to add to cart");
+
+        const data = await res.json();
+
+        console.log(data.success);
+
+    });
+
+</script>

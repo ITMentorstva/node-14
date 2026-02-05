@@ -1,4 +1,4 @@
-<form action="/api/login" method="post">
+<form id="loginForm" action="/api/login" method="post">
     <div>
         <label for="login_email">Email:</label><br>
         <input type="email" id="login_email" name="email" required>
@@ -14,4 +14,37 @@
     <br>
 
     <button type="submit">Login</button>
+
+    <p>If you do not have an account click <a href="/register">here</a> to register</p>
 </form>
+
+
+<script>
+
+    const loginForm = document.getElementById("loginForm");
+
+    loginForm.addEventListener('submit', async (e) => {
+
+        e.preventDefault();
+
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'applcation/json'},
+            body: JSON.stringify({ email, password }),
+            credentials: "include"
+        });
+
+        if (!res.ok) throw new Error("Failed login!");
+
+        const data = await res.json();
+
+        if(data.success) {
+            window.location.reload();
+        }
+
+    });
+
+</script>

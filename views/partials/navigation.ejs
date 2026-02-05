@@ -7,9 +7,32 @@
         <li><a href="#">Contact</a></li>
         <% if(user) { %>
             <li><a href="/cart">Cart</a></li>
-            <li><a href="/api/logout">Logout</a></li>
+            <li><span id="logoutBtn" style="color: white; cursor: pointer;" data-link="/api/logout">Logout</span></li>
         <% } else { %>
             <li><a href="/login">Login</a></li>
         <% } %>
     </ul>
 </nav>
+
+<script>
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    logoutBtn.addEventListener("click", async () => {
+        const url = logoutBtn.dataset.link;
+
+        const res = await fetch(url, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (!res.ok) {
+            throw new Error("Logout failed");
+        }
+
+        const data = await res.json();
+
+        if (data.success) {
+            window.location.reload();
+        }
+    });
+</script>
